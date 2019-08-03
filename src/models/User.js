@@ -12,7 +12,7 @@ const UserSchema = new Schema({
   lastName: { type: String, trim: true, required: [true, 'last name required'] },
   email: { type: String, unique: [true, 'email already exists'], required: [true, 'email required'] },
   mobile: { type: String, unique: [true, 'mobile already exists'], required: [true, 'mobile number required'] },
-  dob: { type: Date, required: [true, 'date of birth required'], max: getMaximumDOB() },
+  dob: { type: Date, required: [true, 'date of birth required'], max: [getMaximumDOB(), 'Must be 18 years old'] },
   gender: { type: String, enum: gender, required: [true, 'gender required'] },
   addressId: { type: Schema.ObjectId, ref: 'Address', required: [true, 'address required'] },
   bloodGroup: { type: String, enum: bloodGroups, required: [true, 'blood group required'] },
