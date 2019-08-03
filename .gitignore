@@ -3,6 +3,8 @@
 #files
 /src/app/app.config.ts
 
+/src/public/images
+
 # compiled output
 /dist
 /tmp

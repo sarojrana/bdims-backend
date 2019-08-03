@@ -80,3 +80,17 @@ exports.createBloodRequest = (req, res, next) => {
     next(err)
   })
 }
+
+exports.bloodRequestList = (req, res, next) => {
+  Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
+    return BloodRequest.find({ userId: loginData.userId }).populate('addressId')
+  }).then((bloodRequests) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: bloodRequests,
+      message: 'successfully retrieved'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+}

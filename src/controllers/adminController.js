@@ -4,7 +4,9 @@ const BloodRequest = require('../models/BloodRequest')
 const httpStatus = require('../util/httpStatus')
 
 exports.getAllUser = (req, res, next) => {
-  const query = {}
+  const query = {
+    role: { $ne: 'ADMIN' }
+  }
   if(req.query.gender) {
     query.gender = req.query.gender
   }
@@ -12,7 +14,7 @@ exports.getAllUser = (req, res, next) => {
     query.status = req.query.status
   }
 
-  User.find(query).exec().then((users) => {
+  User.find(query).populate('addressId').exec().then((users) => {
     users.forEach((user) => {
       if(user.docImage) {
         user.docImage = req.protocol + '://' + req.get('host') + '/' + user.docImage;
@@ -27,18 +29,6 @@ exports.getAllUser = (req, res, next) => {
     next(err)
   })
 } 
-
-exports.getAllBloodRequest = (req, res, next) => {
-  BloodRequest.find().exec().then((bloodRequests) => {
-    res.status(httpStatus.OK).send({
-      status: true,
-      data: bloodRequests,
-      message: 'list retrieved successfully'
-    })
-  }).catch((err) => {
-    next(err)
-  })
-}
 
 exports.approveUser = (req, res, next) => {
   const userId = req.params.userId;
@@ -65,6 +55,44 @@ exports.createBloodDonation = (req, res, next) => {
       status: true,
       data: null,
       message: 'record added successfully'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+}
+
+exports.getDonationList = (req, res, next) => {
+  Donation.find().populate({ path: 'userId', populate: { path: 'addressId' }}).exec().then((donations) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: donations,
+      message: 'list retrieved successfully'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+}
+
+exports.getBloodRequestList = (req, res, next) => {
+  BloodRequest.find().populate('userId')
+  .populate('addressId').exec().then((bloodRequests) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: bloodRequests,
+      message: 'list retrieved successfully'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+}
+
+exports.approveBloodRequest = (req, res, next) => {
+  const id = req.params.id;
+  BloodRequest.findByIdAndUpdate(id, { status: 'APPROVED' }).exec().then((result) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: null,
+      message: 'blood request approved'
     })
   }).catch((err) => {
     next(err)

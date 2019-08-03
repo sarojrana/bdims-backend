@@ -32,6 +32,12 @@ function errorHandler(err, req, res, next) {
      return res.status(http.UNAUTHORIZED).send(errorResponse);
    }
 
+   if(err.name === 'TokenMissingError') {
+    // jwt token missing error
+    errorResponse.message = err.message;
+    return res.status(http.UNAUTHORIZED).send(errorResponse);
+  }
+
    if(err.name === 'JsonWebTokenError') {
      errorResponse.message = err.message;
      if(err.message === 'jwt malformed') {

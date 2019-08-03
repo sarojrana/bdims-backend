@@ -17,4 +17,6 @@ userRouter.post('/register', userController.createUser);
 
 userRouter.post('/bloodRequest', authenticate, userController.createBloodRequest);
 
+userRouter.get('/bloodRequests', authenticate, userController.bloodRequestList);
+
 module.exports = userRouter;

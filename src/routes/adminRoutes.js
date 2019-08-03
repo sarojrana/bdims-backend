@@ -11,8 +11,12 @@ adminRouter.get('/users', adminController.getAllUser);
 
 adminRouter.post('/bloodDonation', adminController.createBloodDonation);
 
-adminRouter.get('/bloodRequests', adminController.getAllBloodRequest);
+adminRouter.get('/bloodRequests', adminController.getBloodRequestList);
+
+adminRouter.post('/approveBloodRequest/:id', adminController.approveBloodRequest);
 
 adminRouter.post('/approveUser/:userId', adminController.approveUser);
+
+adminRouter.get('/donationList', adminController.getDonationList);
 
 module.exports = adminRouter;
