@@ -19,4 +19,6 @@ userRouter.post('/bloodRequest', authenticate, userController.createBloodRequest
 
 userRouter.get('/bloodRequests', authenticate, userController.bloodRequestList);
 
+userRouter.get('/statistics', userController.statistics);
+
 module.exports = userRouter;

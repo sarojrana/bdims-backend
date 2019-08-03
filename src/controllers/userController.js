@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt')
 const config = require('../config/config')
 const User = require('../models/User')
 const Login = require('../models/Login')
+const Donation = require('../models/Donation')
 const BloodRequest = require('../models/BloodRequest')
 const httpStatus = require('../util/httpStatus')
 const upload = require('../middleware/upload')
@@ -93,4 +94,21 @@ exports.bloodRequestList = (req, res, next) => {
   }).catch((err) => {
     next(err)
   })
+}
+
+exports.statistics = async (req, res, next) => {
+  let stats = {};
+  try {
+    stats.donors = await User.countDocuments({ role: 'DONOR' });
+    stats.members = await User.countDocuments({ role: 'MEMBER' });
+    stats.donations = await Donation.countDocuments();
+    stats.bloodRequests = await BloodRequest.countDocuments();
+    await res.status(httpStatus.OK).send({
+      status: true,
+      data: stats,
+      message: 'statistics retrieved successfully'
+    })
+  } catch (err) {
+    next(err)
+  }
 }
