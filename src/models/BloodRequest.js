@@ -11,7 +11,7 @@ const BloodRequestSchema = new Schema({
   bloodGroup: { type: String, enum: bloodGroups, required: [true, 'blood group required'] },
   date: { type: Date, required: [true, 'date for blood donation required'], 
           min: [getMinimumDate(), 'Date and time must be at least few hours later'] },
-  status: { type: String, enum: status, default: 'PENDING', required: [true, 'status required'] },
+  status: { type: String, enum: status, default: 'APPROVED', required: [true, 'status required'] },
 }, { 
   timestamps: true,
   versionKey: false 
@@ -19,7 +19,7 @@ const BloodRequestSchema = new Schema({
 
 function getMinimumDate() {
   let date = new Date();
-  date.setHours(date.getHours() + 4);
+  date.setHours(date.getHours() + 1);
   return new Date(date);
 }
 

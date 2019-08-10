@@ -29,7 +29,8 @@ exports.createUser = (req, res, next) => {
         email: req.body.email,
         gender: req.body.gender,
         dob: req.body.dob,
-        addressId: req.body.addressId,
+        province: req.body.province,
+        district: req.body.district,
         role: req.body.role,
         bloodGroup: req.body.bloodGroup
       })
@@ -55,7 +56,7 @@ exports.createUser = (req, res, next) => {
           message: 'User successfully created'
         })
       }).catch((err) => {
-        unlinkAsync(req.file.path)
+        // unlinkAsync(req.file.path)
         next(err)
       })
     }
@@ -66,7 +67,8 @@ exports.createBloodRequest = (req, res, next) => {
   Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
     const bloodRequest = new BloodRequest({
       userId: loginData.userId,
-      addressId: req.body.addressId,
+      province: req.body.province,
+      district: req.body.district,
       bloodGroup: req.body.bloodGroup,
       date: req.body.date
     })
@@ -112,3 +114,43 @@ exports.statistics = async (req, res, next) => {
     next(err)
   }
 }
+
+exports.getProfile = (req, res, next) => {
+  Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
+    return User.findById(loginData.userId)
+  }).then((user) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: user,
+      message: 'profile retrieved successfully'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+}
+
+exports.getDonorList = (req, res, next) => {
+  const query = {
+    role: 'DONOR'
+  }
+  if(req.query.gender) {
+    query.gender = req.query.gender
+  }
+  
+  if(req.query.bloodGroup) {
+    query.bloodGroup = req.query.bloodGroup
+  }
+
+  Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
+    query._id = { $ne: loginData.userId }
+    return User.find(query, '-docImage')
+  }).then((donors) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: donors,
+      message: 'donors retrieved successfully'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+} 

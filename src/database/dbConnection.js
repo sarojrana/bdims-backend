@@ -26,7 +26,7 @@ let user = {
   mobile: '9860131264',
   bloodGroup: 'A+',
   role: 'ADMIN',
-  status: 'APPROVED',
+  status: 'ACTIVE',
   email: 'admin@gmail.com',
 }
 

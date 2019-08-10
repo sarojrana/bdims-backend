@@ -2,12 +2,13 @@ const express = require('express');
 
 const adminRouter = express.Router();
 
+const bloodGroup = require('../middleware/bloodGroup');
 const authenticateAdmin = require('./../middleware/authenticateAdmin');
-const adminController = require('../controllers/adminController')
+const adminController = require('../controllers/adminController');
 
-adminRouter.use(authenticateAdmin)
+adminRouter.use(authenticateAdmin);
 
-adminRouter.get('/users', adminController.getAllUser);
+adminRouter.get('/users', bloodGroup, adminController.getAllUser);
 
 adminRouter.post('/bloodDonation', adminController.createBloodDonation);
 

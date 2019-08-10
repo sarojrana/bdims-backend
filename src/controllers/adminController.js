@@ -10,15 +10,18 @@ exports.getAllUser = (req, res, next) => {
   if(req.query.gender) {
     query.gender = req.query.gender
   }
-  if(req.query.status) {
-    query.status = req.query.status
+  
+  if(req.query.bloodGroup) {
+    query.bloodGroup = req.query.bloodGroup
   }
 
-  User.find(query).populate('addressId').exec().then((users) => {
+  User.find(query).exec().then((users) => {
     users.forEach((user) => {
       if(user.docImage) {
         user.docImage = req.protocol + '://' + req.get('host') + '/' + user.docImage;
-      } else { user.docImage = null }
+      } else { 
+        user.docImage = req.protocol + '://' + req.get('host') + '/images/no-image.png';  
+      }
     })
     res.status(httpStatus.OK).send({
       status: true,

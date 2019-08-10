@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const userStatus = ['APPROVED', 'DELETED', 'PENDING'];
+const userStatus = ['ACTIVE', 'DELETED'];
 const userTypes = ['ADMIN', 'DONOR', 'MEMBER'];
 
 const LoginSchema = new Schema({
