@@ -141,6 +141,14 @@ exports.getDonorList = (req, res, next) => {
     query.bloodGroup = req.query.bloodGroup
   }
 
+  if(req.query.district) {
+    query.district = req.query.district
+  }
+
+  if(req.query.province) {
+    query.province = req.query.province
+  }
+
   Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
     query._id = { $ne: loginData.userId }
     return User.find(query, '-docImage')
