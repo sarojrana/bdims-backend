@@ -16,7 +16,7 @@ adminRouter.get('/bloodRequests', adminController.getBloodRequestList);
 
 adminRouter.post('/approveBloodRequest/:id', adminController.approveBloodRequest);
 
-adminRouter.post('/approveUser/:userId', adminController.approveUser);
+adminRouter.delete('/delete/:userId', adminController.deleteUser);
 
 adminRouter.get('/donationList', adminController.getDonationList);
 

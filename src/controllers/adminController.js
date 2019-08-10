@@ -33,13 +33,13 @@ exports.getAllUser = (req, res, next) => {
   })
 } 
 
-exports.approveUser = (req, res, next) => {
+exports.deleteUser = (req, res, next) => {
   const userId = req.params.userId;
-  User.findByIdAndUpdate(userId, { status: 'APPROVED' }).exec().then((result) => {
+  User.findByIdAndDelete(userId).exec().then((result) => {
     res.status(httpStatus.OK).send({
       status: true,
       data: null,
-      message: 'user approved'
+      message: 'user deleted'
     })
   }).catch((err) => {
     next(err)
