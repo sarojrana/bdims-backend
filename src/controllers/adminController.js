@@ -5,7 +5,8 @@ const httpStatus = require('../util/httpStatus')
 
 exports.getAllUser = (req, res, next) => {
   const query = {
-    role: { $ne: 'ADMIN' }
+    role: { $ne: 'ADMIN' },
+    status: { $ne: 'DELETED' }
   }
   if(req.query.gender) {
     query.gender = req.query.gender
@@ -35,7 +36,7 @@ exports.getAllUser = (req, res, next) => {
 
 exports.deleteUser = (req, res, next) => {
   const userId = req.params.userId;
-  User.findByIdAndDelete(userId).exec().then((result) => {
+  User.findByIdAndUpdate(userId, { status: 'DELETED'}, { upsert: true }).exec().then((result) => {
     res.status(httpStatus.OK).send({
       status: true,
       data: null,
@@ -96,6 +97,32 @@ exports.approveBloodRequest = (req, res, next) => {
       status: true,
       data: null,
       message: 'blood request approved'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+}
+
+exports.deleteBloodRequest = (req, res, next) => {
+  const id = req.params.id;
+  BloodRequest.findByIdAndDelete(id).exec().then((result) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: null,
+      message: 'deleted successfully'
+    })
+  }).catch((err) => {
+    next(err)
+  })
+}
+
+exports.deleteDonation = (req, res, next) => {
+  const id = req.params.id;
+  Donation.findByIdAndDelete(id).exec().then((result) => {
+    res.status(httpStatus.OK).send({
+      status: true,
+      data: null,
+      message: 'deleted successfully'
     })
   }).catch((err) => {
     next(err)

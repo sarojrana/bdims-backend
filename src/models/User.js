@@ -30,7 +30,11 @@ const UserSchema = new Schema({
 UserSchema.virtual('age').get(function () {
   const date = new Date();
   const bDate = new Date(this.dob);
-  return date.getFullYear() - bDate.getFullYear();
+  if(this.dob) {
+    return date.getFullYear() - bDate.getFullYear();
+  } else {
+    return '';
+  }  
 });
 
 function getMaximumDOB() {

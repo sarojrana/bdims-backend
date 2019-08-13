@@ -7,7 +7,8 @@ const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
 const BloodRequestSchema = new Schema({
   userId: { type: Schema.ObjectId, ref: 'User', required: [true, 'userId required'] },
-  addressId: { type: Schema.ObjectId, ref: 'Address', required: [true, 'address required'] },
+  province: { type: String, required: [true, 'province required'] },
+  district: { type: String, require: [true, 'district required'] },
   bloodGroup: { type: String, enum: bloodGroups, required: [true, 'blood group required'] },
   date: { type: Date, required: [true, 'date for blood donation required'], 
           min: [getMinimumDate(), 'Date and time must be at least few hours later'] },
