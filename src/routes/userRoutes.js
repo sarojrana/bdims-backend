@@ -6,21 +6,19 @@ const bloodGroup = require('../middleware/bloodGroup');
 const userController = require('../controllers/userController');
 const authenticate = require('../middleware/authenticate');
 
-userRouter.get('/', function(req, res){
-  res.json({
-    status: 'success',
-    data: { user_id: req.body.id, role: req.body.role },
-    message: 'This is user api'
-  });
-});
-
 userRouter.post('/register', userController.createUser);
 
 userRouter.get('/statistics', userController.statistics);
 
+userRouter.get('/placesAutocomplete', userController.getGooglePlaceList);
+
 userRouter.use(authenticate);
 
 userRouter.get('/profile', userController.getProfile);
+
+userRouter.get('/addressStatus', userController.addressStatus);
+
+userRouter.post('/updateUserLocation', userController.updateUserAddress);
 
 userRouter.post('/bloodRequest', userController.createBloodRequest);
 

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const { promisify } = require('util')
 const bcrypt = require('bcrypt')
+const request = require('request-promise-native')
 
 const config = require('../config/config')
 const User = require('../models/User')
@@ -11,6 +12,13 @@ const httpStatus = require('../util/httpStatus')
 const upload = require('../middleware/upload')
 
 const unlinkAsync = promisify(fs.unlink)
+
+const googleMapsClient = require('@google/maps').createClient({
+  key: config.GOOGLE_API_KEY,
+  Promise: Promise
+})
+
+const googleSessionToken = require('@google/maps').util.placesAutoCompleteSessionToken()
 
 exports.createUser = (req, res, next) => {
   upload(req, res, (err) => {
@@ -63,6 +71,64 @@ exports.createUser = (req, res, next) => {
   })
 }
 
+exports.addressStatus = (req, res, next) => {
+  Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
+    return User.findById(loginData.userId)
+  }).then((user) => {
+    if(user.province && user.district && user.latlng) {
+      res.status(httpStatus.OK).send({
+        status: true,
+        data: 'COMPLETE',
+        message: 'address is complete'
+      })
+    } else {
+      res.status(httpStatus.OK).send({
+        status: true,
+        data: 'INCOMPLETE',
+        message: 'address is incomplete'
+      })
+    }
+  }).catch(err => {
+    next(err)
+  })
+}
+
+exports.updateUserAddress = async (req, res, next) => {
+  let query = {}
+
+  if(req.body.province) {
+    query.province = req.body.province
+  }
+  if(req.body.district) {
+    query.district = req.body.district
+  }
+
+  try {
+    const result = await googleMapsClient.place({
+                      placeid: req.body.placeId,
+                      language: 'en',
+                      fields: ['formatted_address', 'name', 'geometry']
+                    }).asPromise()
+    const location = await result.json.result.geometry.location
+    query.latlng = await `${location.lat},${location.lng}`
+    query.location = await result.json.result.formatted_address
+    const loginData = await Login.findById(req.body.LOGIN_ID)
+    const user = await User.findByIdAndUpdate(loginData.userId,
+      query, { upsert: true })
+    if(user) {
+      res.status(httpStatus.OK).send({
+        status: true,
+        data: null,
+        message: 'user location updated successfully'
+      })
+    } else {
+      throw 'failed to update'
+    }
+  } catch(err) {
+    next(err)
+  }
+}
+
 exports.createBloodRequest = (req, res, next) => {
   Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
     const bloodRequest = new BloodRequest({
@@ -101,8 +167,8 @@ exports.bloodRequestList = (req, res, next) => {
 exports.statistics = async (req, res, next) => {
   let stats = {};
   try {
-    stats.donors = await User.countDocuments({ role: 'DONOR' });
-    stats.members = await User.countDocuments({ role: 'MEMBER' });
+    stats.donors = await User.countDocuments({ role: 'DONOR', status: { $ne: 'DELETED'} });
+    stats.members = await User.countDocuments({ role: 'MEMBER', status: { $ne: 'DELETED'} });
     stats.donations = await Donation.countDocuments();
     stats.bloodRequests = await BloodRequest.countDocuments();
     await res.status(httpStatus.OK).send({
@@ -129,10 +195,12 @@ exports.getProfile = (req, res, next) => {
   })
 }
 
-exports.getDonorList = (req, res, next) => {
+exports.getDonorList = async (req, res, next) => {
+  let user
   const query = {
     role: 'DONOR'
   }
+
   if(req.query.gender) {
     query.gender = req.query.gender
   }
@@ -149,16 +217,76 @@ exports.getDonorList = (req, res, next) => {
     query.province = req.query.province
   }
 
-  Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
-    query._id = { $ne: loginData.userId }
+  Login.findById(req.body.LOGIN_ID).exec()
+  .then((loginData) => {
+    return User.findById(loginData.userId)
+  }).then((data) => {
+    user = data
+    query._id = { $ne: user._id }
     return User.find(query, '-docImage')
   }).then((donors) => {
+    return Promise.all(
+      donors.map(async donor => {
+        let dummyDonor = {
+          _id: donor._id,
+          firstName: donor.firstName,
+          lastName: donor.lastName,
+          email: donor.email,
+          mobile: donor.mobile,
+          gender: donor.gender,
+          age: donor.age || null,
+          bloodGroup: donor.bloodGroup,
+          province: donor.province || null,
+          district: donor.district || null,
+          location: donor.location || null,
+          distance: null,
+          time: null,
+          role: donor.role,
+          status: donor.status
+        }
+        
+        if(donor.latlng) {
+          const options = {
+            uri: `https://graphhopper.com/api/1/matrix?point=${user.latlng}&point=${donor.latlng}&
+                  type=json&vehicle=car&out_array=distances&out_array=times&key=${config.GRASSHOPPER_API_KEY}`,
+            method: 'GET',
+            json: true
+          }
+          const distance = await request(options)
+          dummyDonor.distance = await (distance.distances[1][0]/1000).toFixed(2) || null
+          dummyDonor.time = await Math.ceil((distance.times[1][0]/60)) || null
+        }
+        return await dummyDonor
+      })
+    )
+  }).then((donorList) => {
+    donorList.sort();
     res.status(httpStatus.OK).send({
       status: true,
-      data: donors,
+      data: donorList,
       message: 'donors retrieved successfully'
     })
   }).catch((err) => {
     next(err)
   })
 } 
+
+exports.getGooglePlaceList = (req, res, next) => {
+  googleMapsClient.placesAutoComplete({
+    input: req.query.search || '',
+    language: 'en',
+    components: { country: 'np' },
+    sessiontoken: googleSessionToken
+  }).asPromise()
+  .then((response) => {
+    const data = response.json.predictions.map(({description, place_id}) => ({ description, place_id }))
+    res.send({
+      status: true,
+      data: data,
+      message: 'List retrieved successfully'
+    })
+  })
+  .catch((err) => {
+    next(err)
+  });
+}

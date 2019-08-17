@@ -16,6 +16,8 @@ const UserSchema = new Schema({
   gender: { type: String, enum: gender, required: [true, 'gender required'] },
   province: { type: String },
   district: { type: String },
+  latlng: { type: String },
+  location: { type: String },
   bloodGroup: { type: String, enum: bloodGroups, required: [true, 'blood group required'] },
   role: { type: String, default: 'MEMBER', enum: userTypes },
   status: { type: String, default: 'ACTIVE', enum: userStatus, required: [true, 'status required'] },
