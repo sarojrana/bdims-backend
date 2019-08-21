@@ -9,6 +9,7 @@ const Login = require('../models/Login')
 const Donation = require('../models/Donation')
 const BloodRequest = require('../models/BloodRequest')
 const httpStatus = require('../util/httpStatus')
+const constant = require('../util/constant')
 const upload = require('../middleware/upload')
 
 const unlinkAsync = promisify(fs.unlink)
@@ -69,6 +70,54 @@ exports.createUser = (req, res, next) => {
       })
     }
   })
+}
+
+exports.updateProfile = (req, res, next) => {
+  Login.findById(req.body.LOGIN_ID).exec().then((loginData) => {
+    const query = {};
+    if(req.body.firstName) {
+      query.firstName = req.body.firstName
+    }
+    if(req.body.lastName) {
+      query.lastName = req.body.lastName
+    }
+    if(req.body.dob) {
+      if(isDOBValid(req.body.dob)){
+        query.dob = req.body.dob
+      }
+    }
+    if(req.body.bloodGroup) {
+      if(constant.bloodGroups.includes(req.body.bloodGroup)) {
+        query.bloodGroup = req.body.bloodGroup
+      }
+    }
+
+    if(req.body.gender) {
+      if(constant.gender.includes(req.body.gender)) {
+        query.gender = req.body.gender
+      }
+    }
+
+    return User.findByIdAndUpdate(loginData.userId, query, { upsert: true })
+  }).then((result) => {
+    res.status(httpStatus.CREATED).send({
+      status: true,
+      data: null,
+      message: 'profile updated successfully'
+    })
+  }).catch(err => {
+    next(err)
+  })
+}
+
+function isDOBValid(date) {
+  const presentDate = new Date();
+  const dobDate = new Date(date);
+  const diff = presentDate.getFullYear() - dobDate.getFullYear();
+  if(diff > 17) {
+    return true;
+  }
+  return false;
 }
 
 exports.addressStatus = (req, res, next) => {

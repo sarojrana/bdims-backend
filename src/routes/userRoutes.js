@@ -16,6 +16,8 @@ userRouter.use(authenticate);
 
 userRouter.get('/profile', userController.getProfile);
 
+userRouter.post('/updateProfile', userController.updateProfile);
+
 userRouter.get('/addressStatus', userController.addressStatus);
 
 userRouter.post('/updateUserLocation', userController.updateUserAddress);
