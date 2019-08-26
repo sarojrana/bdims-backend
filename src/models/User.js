@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const gender = ['FEMALE', 'MALE', 'OTHER'];
-const userStatus = ['ACTIVE', 'DELETED'];
+const userStatus = ['ACTIVE', 'INACTIVE', 'DELETED'];
 const userTypes = ['ADMIN', 'DONOR', 'MEMBER'];
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 

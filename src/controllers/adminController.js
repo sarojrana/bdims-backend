@@ -47,6 +47,27 @@ exports.deleteUser = (req, res, next) => {
   })
 }
 
+exports.changeStatus = (req, res, next) => {
+  const userId = req.params.userId;
+  User.findById(userId).exec().then((user) => {
+    let status
+    if(user.status === 'ACTIVE') {
+      status = 'INACTIVE'
+    } else {
+      status = 'ACTIVE'
+    }
+    return User.findByIdAndUpdate(userId, { status }, { upsert: true })
+  }).then((result) => {
+    res.status(httpStatus.CREATED).send({
+      status: true,
+      data: null,
+      message: 'status changed successfully'
+    });
+  }).catch(err => {
+    next(err)
+  })
+}
+
 exports.createBloodDonation = (req, res, next) => {
   User.findById(req.body.userId).exec().then((user) => {
     const donation = new Donation({

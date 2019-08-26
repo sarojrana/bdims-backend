@@ -10,6 +10,10 @@ adminRouter.use(authenticateAdmin);
 
 adminRouter.get('/users', bloodGroup, adminController.getAllUser);
 
+adminRouter.post('/changeUserStatus/:userId', adminController.changeStatus);
+
+adminRouter.delete('/delete/:userId', adminController.deleteUser);
+
 adminRouter.post('/bloodDonation', adminController.createBloodDonation);
 
 adminRouter.get('/bloodRequests', adminController.getBloodRequestList);
@@ -17,8 +21,6 @@ adminRouter.get('/bloodRequests', adminController.getBloodRequestList);
 adminRouter.post('/approveBloodRequest/:id', adminController.approveBloodRequest);
 
 adminRouter.delete('/deleteBloodRequest/:id', adminController.deleteBloodRequest);
-
-adminRouter.delete('/delete/:userId', adminController.deleteUser);
 
 adminRouter.get('/donationList', adminController.getDonationList);
 
