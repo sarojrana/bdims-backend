@@ -11,6 +11,7 @@ const BloodRequest = require('../models/BloodRequest')
 const httpStatus = require('../util/httpStatus')
 const constant = require('../util/constant')
 const upload = require('../middleware/upload')
+const cloudinary = require('../config/cloudinaryConfig')
 
 const unlinkAsync = promisify(fs.unlink)
 
@@ -29,23 +30,24 @@ exports.createUser = (req, res, next) => {
       if (req.file) {
         fullPath = 'images/' + req.file.filename;
       }
-
-      const user = new User({
-        docImage: fullPath,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        mobile: req.body.mobile,
-        email: req.body.email,
-        gender: req.body.gender,
-        dob: req.body.dob,
-        province: req.body.province,
-        district: req.body.district,
-        role: req.body.role,
-        bloodGroup: req.body.bloodGroup
-      })
       
       let regUser
-      user.save().then((newUser) => {
+      cloudinary.uploads(req.file.path).then(result => {
+        const user = new User({
+          docImage: result.url,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          mobile: req.body.mobile,
+          email: req.body.email,
+          gender: req.body.gender,
+          dob: req.body.dob,
+          province: req.body.province,
+          district: req.body.district,
+          role: req.body.role,
+          bloodGroup: req.body.bloodGroup
+        })
+        return user.save()
+      }).then((newUser) => {
         regUser = newUser
         const password = req.body.password;
         return bcrypt.hash(password, config.SALT_ROUNDS)
@@ -293,8 +295,7 @@ exports.getDonorList = async (req, res, next) => {
           role: donor.role,
           status: donor.status
         }
-        
-        if(donor.latlng) {
+        if(donor.latlng && user.latlng) {
           const options = {
             uri: `https://graphhopper.com/api/1/matrix?point=${user.latlng}&point=${donor.latlng}&
                   type=json&vehicle=car&out_array=distances&out_array=times&key=${config.GRASSHOPPER_API_KEY}`,

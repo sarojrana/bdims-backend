@@ -18,9 +18,7 @@ exports.getAllUser = (req, res, next) => {
 
   User.find(query).exec().then((users) => {
     users.forEach((user) => {
-      if(user.docImage) {
-        user.docImage = req.protocol + '://' + req.get('host') + '/' + user.docImage;
-      } else { 
+      if(!user.docImage) {
         user.docImage = req.protocol + '://' + req.get('host') + '/images/no-image.png';  
       }
     })
