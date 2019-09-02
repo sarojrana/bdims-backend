@@ -10,7 +10,7 @@ const config = require('../config/config');
 
 const saltRounds = config.SALT_ROUNDS;
 
-const mongoDB_URL = process.env.MONGODB_URI || 'mongodb://localhost:27017/bloodbank';
+const mongoDB_URL = config.MONGODB_URI;
 
 const options = {
   useCreateIndex: true,

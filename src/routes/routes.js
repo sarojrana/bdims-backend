@@ -8,10 +8,18 @@ const adminRouter = require('./adminRoutes');
 
 const authenticate = require('../middleware/authenticate');
 
-router.get('/api', function(req, res){
+router.get('', (req, res, next) => {
+  res.status(http.OK).send({
+    status: true,
+    data: null,
+    message: 'Welcome to blood donor facility'
+  })
+})
+
+router.get('/api', (req, res, next) => {
   res.status(http.OK).send({
     status: 'API working',
-    message: 'Welcome to site-mgmt API!'
+    message: 'Welcome to blood donor API!'
   });
 });
 

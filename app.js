@@ -20,13 +20,9 @@ app.use(cors);
 
 const routes = require('./src/routes/routes');
 
-app.get('', (req, res) => {
-  res.render('index');
-});
-
 require('./src/database/dbConnection');
 
-app.use('/', routes);
+app.use('', routes);
 
 // global error handler
 app.use(errorHandler);

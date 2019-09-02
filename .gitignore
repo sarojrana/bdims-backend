@@ -3,6 +3,9 @@
 #files
 /src/app/app.config.ts
 
+#development
+/src/config/development.js
+
 /src/public/images
 
 # compiled output

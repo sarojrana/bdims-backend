@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "DEBUG=* & nodemon app.js",
+    "dev": "set NODE_ENV=development DEBUG=* & nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Saroj Rana",
@@ -32,8 +33,7 @@
     "delay": "2000",
     "env": {
       "NODE_ENV": "development",
-      "PORT": 8000,
-      "MONGODB_URI": "mongodb://localhost:27017/bloodbank"
+      "PORT": 8000
     }
   }
 }
