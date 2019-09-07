@@ -12,6 +12,7 @@ const httpStatus = require('../util/httpStatus')
 const constant = require('../util/constant')
 const upload = require('../middleware/upload')
 const cloudinary = require('../config/cloudinaryConfig')
+const sendgridEmail = require('../services/email')
 
 const unlinkAsync = promisify(fs.unlink)
 
@@ -61,10 +62,14 @@ exports.createUser = (req, res, next) => {
         })
         return login.save()
       }).then((loginData) => {
+        const link = `${req.protocol}://${req.headers.host}/users/verify/${loginData._id}`;
+        const user = `${regUser.firstName} ${regUser.lastName}`;
+        const email = regUser.email;
+        sendgridEmail.sendVerificationEmail(email, user, link);
         res.status(httpStatus.CREATED).send({
           status: true,
           data: regUser,
-          message: 'User successfully created'
+          message: 'User successfully created. Mail has been sent to your email. Please verify'
         })
       }).catch((err) => {
         // unlinkAsync(req.file.path)
@@ -72,6 +77,47 @@ exports.createUser = (req, res, next) => {
       })
     }
   })
+}
+
+exports.verifyUser = async (req, res, next) => {
+  const loginId = req.params.loginId;
+
+  try {
+    const loginData = await Login.findById(loginId)
+    const user = await User.findById(loginData.userId)
+    if(user.verified) {
+      return await res.send(`
+        <div style="text-align: center; padding-top: 2rem;">
+        <h2 style="color: green">Already Verified</h2>
+        <p> You have access to all the features of BDIMS </p>
+        <a href="https://bdims.github.io/bdims-website/"
+          style="background: green; padding: 10px; border-radius: 5px; color: #fff; 
+          font-weight: bold; text-decoration: none;">Goto Website </a>
+        </div>
+      `)
+    } else {
+      await User.findByIdAndUpdate(user._id, { verified: true }, { upsert: true })
+      return await res.send(`
+        <div style="text-align: center; padding-top: 2rem;">
+        <h2 style="color: green">Verification Successful</h2>
+        <p> Now you can access all the features of BDIMS </p>
+        <a href="https://bdims.github.io/bdims-website/"
+          style="background: green; padding: 10px; border-radius: 5px; color: #fff; 
+          font-weight: bold; text-decoration: none;">Goto Website </a>
+        </div>
+      `)
+    }
+  } catch(err) {
+    res.send(`
+      <div style="text-align: center; padding-top: 2rem;">
+      <h2 style="color: red">Verification Unsuccessful</h2>
+      <p> Link is invalid or expired </p>
+      <a href="https://bdims.github.io/bdims-website/"
+        style="background: green; padding: 10px; border-radius: 5px; color: #fff; 
+        font-weight: bold; text-decoration: none;">Goto Website </a>
+      </div>
+    `)
+  }
 }
 
 exports.updateProfile = (req, res, next) => {
@@ -337,6 +383,38 @@ exports.getGooglePlaceList = (req, res, next) => {
     })
   })
   .catch((err) => {
+    next(err)
+  });
+}
+
+exports.mailTest = (req, res, next) => {
+  let messages = [];
+  Login.findById(req.body.LOGIN_ID).exec().then(loginData => {
+    return User.findById(loginData.userId)
+  }).then(user => {
+    const query = {
+      // district: user.district || null,
+      status: 'ACTIVE',
+      role: 'DONOR'
+    }
+    return User.find(query)
+  }).then(async donors => {
+    await donors.forEach(donor => {
+      const message = {
+        to: donor.email,
+        from: 'mail@bdims.com',
+        subject: 'Urgent Blood Required',
+        text: 'Help!!!',
+        html: `
+          To accept blood request please click the link below <br>
+          <a style="background: green; color: white;"
+            href="${req.protocol}://${req.get('host')}/accept/${donor._id}"> Accept Blood Request </a>
+        `,
+      }
+      messages.push(message)
+    }) 
+    await res.send(messages)
+  }).catch(err => {
     next(err)
   });
 }

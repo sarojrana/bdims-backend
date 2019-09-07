@@ -21,6 +21,7 @@ const UserSchema = new Schema({
   bloodGroup: { type: String, enum: bloodGroups, required: [true, 'blood group required'] },
   role: { type: String, default: 'MEMBER', enum: userTypes },
   status: { type: String, default: 'ACTIVE', enum: userStatus, required: [true, 'status required'] },
+  verified: { type: Boolean, default: false },
   docImage: { type: String },
 }, { 
   timestamps: true,

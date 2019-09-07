@@ -19,15 +19,16 @@ const options = {
 }
 
 let user = {
-  firstName: 'Sandeep',
-  lastName: 'Shrestha',
+  firstName: 'Admin',
+  lastName: '',
   age: 25,
   gender: 'MALE',
-  mobile: '9860131264',
+  mobile: '98000000',
   bloodGroup: 'A+',
   role: 'ADMIN',
   status: 'ACTIVE',
-  email: 'admin@gmail.com',
+  verified: true,
+  email: config.ADMIN_EMAIL,
 }
 
 const mongoose = require('mongoose').connect(mongoDB_URL, options)
@@ -36,7 +37,7 @@ const mongoose = require('mongoose').connect(mongoDB_URL, options)
     return User.findOneAndUpdate({ email: user.email }, user, { upsert: true, new: true, setDefaultsOnInsert: true })
   }).then((newUser) => {
     user = newUser;
-    const password = 'admin';
+    const password = config.ADMIN_PASSWORD;
     return bcrypt.hash(password, saltRounds)
   }).then((hash) => {
     const login = {
